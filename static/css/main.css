@@ -128,7 +128,7 @@ table { border-collapse:collapse; border-spacing:0; }
 /*显示隐藏 左边菜单栏*/
 body>.active{
 	transition:width .3s;
-	width:5px;
+	width:3px;
 }
 body>.active>.go-zfx>.go-but{
 	border-radius:50%;
