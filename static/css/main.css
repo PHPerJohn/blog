@@ -109,18 +109,21 @@ table { border-collapse:collapse; border-spacing:0; }
 	position:absolute;
 	right:0px;
 	bottom:0px;
-	width:5px;
+	width:3px;
 	height:100%;
 	background-color:#333;
 }
 .go-menu .go-but{
 	position:absolute;
-	top:40%;
-	right:-5px;
-	width:15px;
-	height:150px;
+	top: 45%;
+	right:-10px;
+	width:23px;
+	height:90px;
 	border-radius:50%;
-	background-color:#333;
+	background-color:#000000;
+}
+.go-menu .go-but:hover{
+	background-color:#666;
 }
 /*显示隐藏 左边菜单栏*/
 body>.active{
