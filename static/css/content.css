@@ -1,0 +1,16 @@
+.go-content{
+	position:absolute;
+	top:35px;
+	bottom:0px;
+	right:0px;
+	left:140px;
+}
+.go-content iframe{
+	width:100%;
+	height:100%;
+	border:0;
+	vertical-align:bottom;
+}
+body>.active+div{
+	left:10px;
+}

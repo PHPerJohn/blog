@@ -63,6 +63,7 @@ table { border-collapse:collapse; border-spacing:0; }
 }
 /*操作按钮-弹出列表*/
 .go-navbar .go-r .go-nav-alert{
+	z-index:3;
 	position: absolute;
 	right:0;
 	top:35px;
@@ -116,22 +117,26 @@ table { border-collapse:collapse; border-spacing:0; }
 .go-menu .go-but{
 	position:absolute;
 	top: 45%;
-	right:-10px;
-	width:23px;
+	right: 0px;
+	width:15px;
 	height:90px;
-	border-radius:50%;
+	border-radius:50% 0 0 50%;
 	background-color:#000000;
 }
 .go-menu .go-but:hover{
-	background-color:#666;
+	background-color:#3388dd;
 }
 /*显示隐藏 左边菜单栏*/
 body>.active{
 	transition:width .3s;
-	width:3px;
+	width:10px;
+}
+body>.active>.go-zfx{
+	width:10px;
 }
 body>.active>.go-zfx>.go-but{
-	border-radius:50%;
+	border-radius:50% 0 0 50%;
+	background-color:#3388dd;
 }
 body>.active>ul, body>.active>ul>li{
 	display:none;
