@@ -12,5 +12,6 @@
 	vertical-align:bottom;
 }
 body>.active+div{
+	transition:left .3s;
 	left:10px;
 }
