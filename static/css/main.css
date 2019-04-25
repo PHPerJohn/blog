@@ -6,7 +6,7 @@ code, kbd, pre, samp { font-family:couriernew, courier, monospace; }
 small{ font-size:12px; } 
 ul, ol { list-style:none; } 
 a { text-decoration:none; } 
-a:hover { text-decoration:underline; } 
+a:hover { text-decoration:none; } 
 sup { vertical-align:text-top; } 
 sub{ vertical-align:text-bottom; } 
 legend { color:#000; } 
@@ -48,9 +48,11 @@ table { border-collapse:collapse; border-spacing:0; }
 }
 .go-navbar .go-nav-alert li{
 	padding:5px;
+	color:#333;
 }
 .go-navbar .go-nav-alert li:hover{
 	background-color:#4477aa;
+	color:#333;
 }
 /*左边菜单*/
 .go-menu{
