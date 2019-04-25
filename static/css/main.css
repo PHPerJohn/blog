@@ -20,14 +20,43 @@ table { border-collapse:collapse; border-spacing:0; }
 	height:35px;
 	background-color:#333;
 }
-/*操作按钮*/
-.go-navbar .go-r span{
+.go-navbar .go-r span, .go-navbar .go-l span{
 	position: absolute;
 	height:35px;
-	right:0px;
 	padding:0 10px;
 	color:#eee;
 	line-height: 35px;
+}
+.go-navbar .go-l span{
+	left:5px;
+}
+/*logo动画*/
+.go-navbar .go-l:hover span{
+	animation: go-logo 1.5s;
+}
+@keyframes go-logo{
+	/*25% {
+		transform: rotate(90deg);
+		color:#99bbcc;
+		font-family:"SimSun","KaiTi";
+	}
+	50% {
+		transform: rotate(180deg);
+		color:#99bbcc;
+		font-family:"SimSun","KaiTi";
+	}
+	75% {
+		transform: rotate(270deg);
+		color:#99bbcc;
+		font-family:"SimSun","KaiTi";
+	}*/
+	100% {
+		transform: rotate(360deg);
+		color:#ffffff;
+	}
+}
+.go-navbar .go-r span{
+	right:0px;
 }
 .go-navbar .go-r:hover span{
 	background-color:#4477aa;
@@ -52,16 +81,16 @@ table { border-collapse:collapse; border-spacing:0; }
 }
 .go-navbar .go-nav-alert li:hover{
 	background-color:#4477aa;
-	color:#333;
+	color:#eee;
 }
 /*左边菜单*/
 .go-menu{
 	position:absolute;
 	top:35px;
 	bottom:0px;
-	transition:width .5s;
 	width:140px;
 	background-color:#bbb;
+	transition:width .3s;
 }
 .go-menu ul{
 	position:absolute;
@@ -69,29 +98,38 @@ table { border-collapse:collapse; border-spacing:0; }
 	width:140px;
 }
 .go-menu ul li{
-	padding:8px;
+	padding:8px 8px 8px 15px;
 }
 .go-menu ul li:hover{
+	color:#eee;
 	background-color:#4477aa;
 }
 /*菜单隐藏按钮*/
 .go-menu .go-zfx{
 	position:absolute;
-	top:50%;
-	right:-8px;
-	width:25px;
-	height:30px;
-	border-radius:50% 0 0 50%;
+	right:0px;
+	bottom:0px;
+	width:5px;
+	height:100%;
+	background-color:#333;
+}
+.go-menu .go-but{
+	position:absolute;
+	top:40%;
+	right:-5px;
+	width:15px;
+	height:150px;
+	border-radius:50%;
 	background-color:#333;
 }
 /*显示隐藏 左边菜单栏*/
 body>.active{
-	transition:width .5s;
+	transition:width .3s;
 	width:5px;
 }
-body>.active>.go-zfx{
-	border-radius:0 50% 50% 0;
+body>.active>.go-zfx>.go-but{
+	border-radius:50%;
 }
-body>.active>ul{
+body>.active>ul, body>.active>ul>li{
 	display:none;
 }
