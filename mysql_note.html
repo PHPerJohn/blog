@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="./static/css/main.css">
+<link rel="stylesheet" type="text/css" href="./static/css/content.css">
+<script type="text/javascript" src="./static/js/main.js"></script>
+<title>GoHome-ui-v1</title>
+</head>
+<body>
+	<div>
+		<h3>mysql知识点</h3>
+		<p>
+			<h4>mysql查看数据表是否存在</h4>
+			<div>
+				public function checkTableExist($dbName, $tableName)
+				{
+					// information_schema 是mysql自带的库 记录着数据库元数据， 如：库名、表名、列的数据类型、访问权限等信息
+					// information_schema 实际上是视图,不是基本表
+					$sql = "SELECT table_name FROM information_schema.tables WHERE table_schema='{$dbName}' AND table_name='{$tableName}' limit 1";
+					
+					$tableInfo = $this->query($sql);
+					return !empty($tableInfo);
+				}
+			</div>
+		</p>
+	</div>
+</body>
+</html>
