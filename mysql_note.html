@@ -12,7 +12,7 @@
 		<h3>mysql知识点</h3>
 		<p>
 			<h4>mysql查看数据表是否存在</h4>
-			<div>
+			<code>
 				public function checkTableExist($dbName, $tableName)
 				{
 					// information_schema 是mysql自带的库 记录着数据库元数据， 如：库名、表名、列的数据类型、访问权限等信息
@@ -22,7 +22,7 @@
 					$tableInfo = $this->query($sql);
 					return !empty($tableInfo);
 				}
-			</div>
+			</code>
 		</p>
 	</div>
 </body>
