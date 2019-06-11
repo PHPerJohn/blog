@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>VUE</title>
+	<link rel="stylesheet" type="text/css" href="./static/highlight/styles/monokai-sublime.css">
+	<script type="text/javascript" src="./static/highlight/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+	<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+	<style>
+	#app{
+		margin: 50px auto;
+		width: 600px;
+	}
+	fieldset{
+		border: 2px solid #336699;
+		margin-bottom: 20px;
+	}
+	fieldset input{
+		width: 200px;
+		height: 30px;
+		margin: 10px 0;
+	}
+	table{
+		width: 600px;
+		border: 2px solid #336699;
+		text-align: center;
+	}
+	thead{
+		background-color: #336699;
+		color: #ffffff;
+	}
+	pre code{
+		margin: 0 auto;
+		width: 1000px;
+	}
+	</style>
+</head>
+<body>
+	<div id="app">
+		<fieldset>
+			<legend>学生信息录入系统</legend>
+			<div>
+				<span>姓名：</span>
+				<input type="text" placeholder="请输入姓名" v-model="newStudent.name">
+			</div>
+			<div>
+				<span>性别：</span>
+				<select v-model="newStudent.sex">
+					<option value="男">男</option>
+					<option value="女">女</option>
+				</select>
+			</div>
+			<div>
+				<span>年龄：</span>
+				<input type="text" placeholder="0" v-model="newStudent.age">
+			</div>
+			<div>
+				<span>电话：</span>
+				<input type="text" placeholder="请输入电话号码" v-model="newStudent.phone">
+			</div>
+			<button @click="createNewStudent()">创建新用户</button>
+		</fieldset>
+		
+		<table>
+			<thead>
+				<tr>
+					<td>姓名</td>
+					<td>性别</td>
+					<td>年龄</td>
+					<td>电话</td>
+					<td>操作</td>
+				</tr>
+			</thead>
+			<tbody>
+				<tr v-for="(p, index) in people">
+					<td>{{p.name}}</td>
+					<td>{{p.sex}}</td>
+					<td>{{p.age}}</td>
+					<td>{{p.phone}}</td>
+					<td><button @click="deleteStudent(index)">删除</button></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<pre><code class="javascript">
+	var vm = new Vue({
+		el:"#app",
+		data:{
+			people: [
+				{name:"梁可乐", sex:"男", age:22, phone:"12345698772"},
+				{name:"梁萝卜", sex:"女", age:18, phone:"12345698778"},
+				{name:"梁绵筐", sex:"男", age:20, phone:"12345698770"}
+			],
+			newStudent:{name:'', sex:'男', age:0, phone:''}
+		},
+		methods:{
+			createNewStudent(){
+				if(this.newStudent.name === ''){
+					alert('姓名不能空');
+					return;
+				}
+				if(this.newStudent.age <= 0){
+					alert('年龄不能0');
+					return;
+				}
+				if(this.newStudent.phone === ''){
+					alert('电话号码不能空');
+					return;
+				}
+				this.people.unshift(this.newStudent)
+				this.newStudent = {name:'', sex:'男', age:0, phone:''}
+			},
+			deleteStudent(index) {
+				console.log(index)
+				this.people.splice(index, 1);
+			}
+		}
+	})
+	</code></pre>
+	<script>
+		var vm = new Vue({
+			el:"#app",
+			data:{
+				people: [
+					{name:"梁可乐", sex:"男", age:22, phone:"12345678972"},
+					{name:"梁萝卜", sex:"女", age:18, phone:"12345678978"},
+					{name:"梁绵筐", sex:"男", age:20, phone:"12345678970"}
+				],
+				newStudent:{name:'', sex:'男', age:0, phone:''}
+			},
+			methods:{
+				createNewStudent(){
+					if(this.newStudent.name === ''){
+						alert('姓名不能空');
+						return;
+					}
+					if(this.newStudent.age <= 0){
+						alert('年龄不能0');
+						return;
+					}
+					if(this.newStudent.phone === ''){
+						alert('电话号码不能空');
+						return;
+					}
+					this.people.unshift(this.newStudent)
+					this.newStudent = {name:'', sex:'男', age:0, phone:''}
+				},
+				deleteStudent(index) {
+					console.log(index)
+					this.people.splice(index, 1);
+				}
+			}
+		})
+	</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

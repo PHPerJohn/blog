@@ -6,364 +6,350 @@
 <script type="text/javascript" src="./static/highlight/highlight.pack.js"></script>
 <script>hljs.initHighlightingOnLoad();</script>
 <title>GoHome-ui-v1</title>
+<style>
+	pre code{
+		margin: 20px auto;
+		width: 1200px;
+	}
+</style>
 </head>
 <body>
 	<div>
-		<h3>mysql知识点</h3>
-		<pre>
-<code class="php">
-<h4>mysql查看数据表是否存在!</h4>
-/**
- * @param string $dbName 库名
- * @param string $tableName 数据表名称
- * @return bool
- */
-public function checkTableExist($dbName, $tableName)
-{
-	// information_schema 是mysql自带的库 记录着数据库元数据， 如：库名、表名、列的数据类型、访问权限等信息
-	// information_schema 实际上是视图,不是基本表
-	$sql = "SELECT table_name FROM information_schema.tables WHERE table_schema='{$dbName}' AND table_name='{$tableName}' limit 1";
-	$tableInfo = $this->query($sql);
-	return !empty($tableInfo);
-}
-</code>
-		</pre>
+		<h1>mysql知识点</h1>
+		<pre><code class="php">
+		mysql查看数据表是否存在!
+		/**
+		 * @param string $dbName 库名
+		 * @param string $tableName 数据表名称
+		 * @return bool
+		 */
+		public function checkTableExist($dbName, $tableName)
+		{
+			// information_schema 是mysql自带的库 记录着数据库元数据， 如：库名、表名、列的数据类型、访问权限等信息
+			// information_schema 实际上是视图,不是基本表
+			$sql = "SELECT table_name FROM information_schema.tables WHERE table_schema='{$dbName}' AND table_name='{$tableName}' limit 1";
+			$tableInfo = $this->query($sql);
+			return !empty($tableInfo);
+		}
+		</code></pre>
 
-		<pre>
-<code class="php">
-<h4>创建分区表</h4>
-/**
- * @param string $defaultTable 数据表名称 (tablename)
- * @param string $partitionTable 分区数据表名称 (tablename_20190610)
- * @param string $dbName 库名
- * @return bool
- */
-public function createPartitionTable($defaultTable, $partitionTable, $dbName)
-{
-	// 现查看表是否存在
-	$sql = "SELECT table_name FROM information_schema.tables WHERE table_schema='{$dbName}' AND table_name='{$partitionTable}' limit 1";
-	$tableInfo = $this->query($sql);
-	// 不存在则从默认表复制 创建表
-	if (empty($tableInfo)) {
-		$result = $this->execute(CREATE table IF NOT EXISTS {$partitionTable} Like {$defaultTable});
-		if ($result === false) {
-			return false;
-		}
-	}
-	return true;
-}
-</code>
-		</pre>
-		
-		<pre>
-<code class="php">
-<h4>提前创建第二天的新表</h4>
-public function creareNextDayTable()
-{
-	// 通常由定时任务调用的 预先创建的表
-	$tables = array('user_order', 'user_order_data', 'report_name', 'cash_opt_log');
-	$day = date('ymd', strtotime('+1 day'));
-	foreach ($tables as $tableName) {
-		$this->createPartitionTable($tableName, $tableName . '_' . $day);
-	}
-}
-</code>
-		</pre>
-				
-		<pre>
-<code class="php">
-<h4>获取分页数据</h4>
-/**
- * @param $countSql
- * @param $listSql
- * @param string $dateField
- * @param string $pageSize
- * @param string $nowPage
- * @return array
- */
-public function getPageDataByPartitionTable($countSql, $listSql, $dateField = '', $pageSize = '', $nowPage = '')
-{
-	$table_default = parse_name($this->getModelName()); // 表名
-	if (empty($dateField)) {
-		$dateField = in_array($table_default, array('user_order', 'report_game')) ? 'phase_date' : 'create_date';
-	}
-	if (preg_match('/' . $dateField . '=\'(\d\d\d\d-\d\d-\d\d)\'/', $countSql, $matches)) {
-	// 如果是 日期='xxxx-xx-xx' 直接找到一个表的表名就行
-		$tableName = $this->getPartitionTableByDate($table_default, $matches[1]);
-		$sumDatas = $this->query(str_replace($table_default, $tableName, $countSql));
-		$sumInfo = $sumDatas[0];
-		$pageObj = new Page($sumInfo['count'], $pageSize, $nowPage);
-		$dataList = [];
-		if (intval($sumInfo['counts']) > 0) {
-			$dataList = $this->query(str_replace($table_default, $tableName, $listSql) . " Limit {$pageObj->firstRow}, {$pageObj->listRows}");
-		}
-		return array('sumInfo' => $sumInfo, 'data' => $dataList, 'page' => $pageObj);
-	} elseif (preg_match('/' . $dateField . ' between \'(\d\d\d\d-\d\d-\d\d)\' and \'(\d\d\d\d-\d\d-\d\d)\'/i', $countSql, $matches)) {
-	// 如果是 日期 between 'xxxx-xx-xx' and 'xxxx-xx-xx'
-		$startDate = $matches[1];
-		$endDate = $matches[2];
-		$tableArr = $this->getPartitionTableByDateRange($table_default, $startDate, $endDate);
-		$countInfo = $this->getCountFromPartitionTable($table_default, $countSql, $tableArr);
-		$sumInfo = $countInfo['sumInfo'];
-		//分页
-		$pageObj = new Page($countInfo['count'], $pageSize, $nowPage);
-		
-		$dataList = $this->getDataFromPartitionTable($table_default, $listSql, $countInfo['tableCounts'], $pageObj->firstRow, $pageObj->listRows);
-		return array('sumInfo' => $sumInfo, 'data' => $dataList, 'page' => $pageObj);
-	} else {
-		$sumDatas = $this->query($countSql);
-		$sumInfo = $sumDatas[0];
-		$pageObj = new Page($sumInfo['counts'], $pageSize, $nowPage);
-		$dataList = array();
-		if (intval($sumInfo['counts']) > 0) {
-			$dataList = $this->query($listSql . " Limit {$pageObj->firstRow}, {$pageObj->listRows}");
-		}
-		return array('sumInfo' => $sumInfo, 'data' => $dataList, 'page' => $pageObj);
-	}
-}
-</code>
-		</pre>
-						
-		<pre>
-<code class="php">
-<h4>根据时间定位表，按天</h4>
-/**
- * @param $table_default
- * @param string $query_date
- * @return string
- */
-public function getPartitionTableByDate($table_default, $query_date = '')
-{
-	if (empty($query_date)) {
-		$query_date = time();
-	} else {
-		$query_date = strtotime($query_date);
-	}
-	$tableName = $table_default . '_' . date('ymd', $query_date);
-	$queryDay = intval(substr($tableName, -6));
-	if ($queryDay > intval(date('ymd'))) {
-		return $table_default;
-	}
-	$checkTable = $this->checkTableExist('dbName', $tableName);
-	if ($checkTable) {
-		return $tableName;
-	}
-	// 检查是否查询归档数据
-	$partitionDate = intval(date('ymd', strtotime('-' . 7 . ' day')));
-	if ($queryDay < $partitionDate) {
-		$isCheckOld = false;
-		if (MODULE_NAME === 'Admin' || CONTROLLER_NAME === 'Crontab') {
-			$isCheckOld = true;
-		} else {
-			$maxDate = intval(date('ymd', strtotime('-' . 45 . ' day')));
-			if ($queryDay >= $maxDate) {
-				$isCheckOld = true;
-			}
-		}
-		if ($isCheckOld) {
-			$oldTable = $this->getOldTableByDate($table_default, $query_date);
-			if (!empty($oldTable)) {
-				return $oldTable;
-			}
-		}
-	}
-	return $table_default;
-}
-</code>
-		</pre>
-		
-		<pre>
-<code class="php">
-<h4>查询归档</h4>
-/**
- * @param $table_default
- * @param string $query_date
- * @return string | null
- */
-public function getOldTableByDate($table_default, $query_date = '')
-{
-	$tableName = $table_default . '_' . date('ymd', $query_timestamp);
-	$checkTable = $this->checkTableExist('old_dbName', $tableName);
-	if ($checkTable) {
-		return 'old_dbName' . '.' . $tableName;
-	}
-	return null;
-}
-</code>
-		</pre>
-				
-		<pre>
-<code class="php">
-<h4>根据开始和结束时间定位表，按开始时间-结束时间</h4>
-/**
- * @param $table_default
- * @param string $start_date
- * @param string $end_date
- * @return array
- */
-public function getPartitionTableByDateRange($table_default, $start_date, $end_date = '')
-{
-	if (empty($start_date)) {
-		$startDay = date('ymd', strtotime('-' . 7 . ' day'));
-	} else {
-		$startTimestamp = strtotime($start_date);
-		if (empty($startTimestamp)) {
-			return array($table_default);
-		}
-		$startDay = date('ymd', $startTimestamp);
-	}
-	$startDay = intval($startDay);
-	$endDay = 0;
-	if (!empty($end_date)) {
-		$endTimestamp = strtotime($end_date);
-		if (empty($endTimestamp)) {
-			return array($table_default);
-		}
-		$endDay = date('ymd', $endTimestamp);
-	}
-	$tableList = $this->query("SELECT table_name from information_schema.tables WHERE table_schema='" . "dbName" . "' AND table_name like '{$table_default}\_______' ORDER BY table_name DESC");
-	$tableArr = array();
-	if (!empty($tableList)) {
-		foreach ($tableList as $vo) {
-			$tableDay = intval(substr($vo['table_name'], -6));
-			if ($tableDay >= $startDay) {
-				if ($endDay > 0 && $tableDay > $endDay) {
-					continue;
+		<pre><code class="php">
+		创建分区表
+		/**
+		 * @param string $defaultTable 数据表名称 (tablename)
+		 * @param string $partitionTable 分区数据表名称 (tablename_20190610)
+		 * @param string $dbName 库名
+		 * @return bool
+		 */
+		public function createPartitionTable($defaultTable, $partitionTable, $dbName)
+		{
+			// 现查看表是否存在
+			$sql = "SELECT table_name FROM information_schema.tables WHERE table_schema='{$dbName}' AND table_name='{$partitionTable}' limit 1";
+			$tableInfo = $this->query($sql);
+			// 不存在则从默认表复制 创建表
+			if (empty($tableInfo)) {
+				$result = $this->execute(CREATE table IF NOT EXISTS {$partitionTable} Like {$defaultTable});
+				if ($result === false) {
+					return false;
 				}
-				$tableArr[] = $vo['table_name'];
+			}
+			return true;
+		}
+		</code></pre>
+		
+		<pre><code class="php">
+		提前创建第二天的新表
+		public function creareNextDayTable()
+		{
+			// 通常由定时任务调用的 预先创建的表
+			$tables = array('user_order', 'user_order_data', 'report_name', 'cash_opt_log');
+			$day = date('ymd', strtotime('+1 day'));
+			foreach ($tables as $tableName) {
+				$this->createPartitionTable($tableName, $tableName . '_' . $day);
 			}
 		}
-	}
-	// 检查是否查询归档数据
-	$partitionDate = intval(date('ymd', strtotime('-' . 7 . ' day')));
-	if ($startDay < $partitionDate) {
-		if (MODULE_NAME === "Admin" || CONTROLLER_NAME === "Crontab") { // 后台可查询已归档数据
-			
-		} else {
-			$minDate = intval(date('ymd', strtotime('-' . 45 . ' day'))); // 会员最大可查询范围
-			if ($startDay < $minDate) {
-				$startDay = $minDate;
-			}
-		}
-		$oldTableArr = $this->getOldTableByDateRange($table_default, $startDay, $endDay);
-		if (!empty($oldTableArr)) {
-			$tableArr = array_merge($tableArr, $oldTableArr);
-		}
-	}
-	if (empty($tableArr)) {
-		$tableArr[] = $table_default;
-	}
-	return $tableArr;
-}
-</code>
-		</pre>
+		</code></pre>
 				
-		<pre>
-<code class="php">
-<h4>查询归档数据</h4>
-/**
- * @param $table_default
- * @param string $startDay
- * @param string $endDay
- * @return string | null
- */
-public function getOldTableByDateRange($table_default, $startDay, $endDay)
-{
-	$tableArr = array();
-	$tableList = $this->query("SELECT table_name FROM information_schema.tables WHERE table_schema='" . "old_dbName" . "' AND table_name like '{$table_default}\_______' ORDER BY table_name DESC");
-	if (!empty($tableList)) {
-		foreach ($tableList as $vo) {
-			$tableDay = intval(substr($vo['table_name'], -6));
-			if ($tableDay >= $startDay) {
-				if ($endDay > 0 && $tableDay > $endDay) {
-					continue;
+		<pre><code class="php">
+		获取分页数据
+		/**
+		 * @param $countSql
+		 * @param $listSql
+		 * @param string $dateField
+		 * @param string $pageSize
+		 * @param string $nowPage
+		 * @return array
+		 */
+		public function getPageDataByPartitionTable($countSql, $listSql, $dateField = '', $pageSize = '', $nowPage = '')
+		{
+			$table_default = parse_name($this->getModelName()); // 表名
+			if (empty($dateField)) {
+				$dateField = in_array($table_default, array('user_order', 'report_game')) ? 'phase_date' : 'create_date';
+			}
+			if (preg_match('/' . $dateField . '=\'(\d\d\d\d-\d\d-\d\d)\'/', $countSql, $matches)) {
+			// 如果是 日期='xxxx-xx-xx' 直接找到一个表的表名就行
+				$tableName = $this->getPartitionTableByDate($table_default, $matches[1]);
+				$sumDatas = $this->query(str_replace($table_default, $tableName, $countSql));
+				$sumInfo = $sumDatas[0];
+				$pageObj = new Page($sumInfo['count'], $pageSize, $nowPage);
+				$dataList = [];
+				if (intval($sumInfo['counts']) > 0) {
+					$dataList = $this->query(str_replace($table_default, $tableName, $listSql) . " Limit {$pageObj->firstRow}, {$pageObj->listRows}");
 				}
-				$tableArr[] = "dbName" . $vo['$table_name'];
+				return array('sumInfo' => $sumInfo, 'data' => $dataList, 'page' => $pageObj);
+			} elseif (preg_match('/' . $dateField . ' between \'(\d\d\d\d-\d\d-\d\d)\' and \'(\d\d\d\d-\d\d-\d\d)\'/i', $countSql, $matches)) {
+			// 如果是 日期 between 'xxxx-xx-xx' and 'xxxx-xx-xx'
+				$startDate = $matches[1];
+				$endDate = $matches[2];
+				$tableArr = $this->getPartitionTableByDateRange($table_default, $startDate, $endDate);
+				$countInfo = $this->getCountFromPartitionTable($table_default, $countSql, $tableArr);
+				$sumInfo = $countInfo['sumInfo'];
+				//分页
+				$pageObj = new Page($countInfo['count'], $pageSize, $nowPage);
+				
+				$dataList = $this->getDataFromPartitionTable($table_default, $listSql, $countInfo['tableCounts'], $pageObj->firstRow, $pageObj->listRows);
+				return array('sumInfo' => $sumInfo, 'data' => $dataList, 'page' => $pageObj);
+			} else {
+				$sumDatas = $this->query($countSql);
+				$sumInfo = $sumDatas[0];
+				$pageObj = new Page($sumInfo['counts'], $pageSize, $nowPage);
+				$dataList = array();
+				if (intval($sumInfo['counts']) > 0) {
+					$dataList = $this->query($listSql . " Limit {$pageObj->firstRow}, {$pageObj->listRows}");
+				}
+				return array('sumInfo' => $sumInfo, 'data' => $dataList, 'page' => $pageObj);
 			}
 		}
-	}
-	return $tableArr;
-}
-</code>
-		</pre>
+		</code></pre>
 						
-		<pre>
-<code class="php">
-<h4>获取分表后的总行数信息</h4>
-/**
- * @param $table_default
- * @param $countSql
- * @param $tableArr
- * @param string $countField
- * @return array
- */
-public function getCountFromPartitionTable($table_default, $countSql, $tableArr, $countField = "counts")
-{
-	$sumInfo = [];
-	$tableCounts = [];
-	foreach ($tableArr as $tableName) {
-		$sumDatas = $this->query(str_replace($table_default, $tableName, $countSql));
-		$sumDataInfo = $sumDatas[0];
-		$countByTable = 0;
-		if (isset($sumDataInfo[$countField])) {
-			$countByTable = intval($sumDataInfo[$countField]);
-		}
-		$tableCounts[] = ['table' => $tableName, 'count' => $countByTable];
-		foreach ($sumDataInfo as $k => $val) {
-			if (isset($sumInfo[$k])) {
-				if (strpos($k, 'distinct_') === false) {
-					$sumInfo[$k] = round($sumInfo[$k] + floatval($val), 4);
+		<pre><code class="php">
+		根据时间定位表，按天
+		/**
+		 * @param $table_default
+		 * @param string $query_date
+		 * @return string
+		 */
+		public function getPartitionTableByDate($table_default, $query_date = '')
+		{
+			if (empty($query_date)) {
+				$query_date = time();
+			} else {
+				$query_date = strtotime($query_date);
+			}
+			$tableName = $table_default . '_' . date('ymd', $query_date);
+			$queryDay = intval(substr($tableName, -6));
+			if ($queryDay > intval(date('ymd'))) {
+				return $table_default;
+			}
+			$checkTable = $this->checkTableExist('dbName', $tableName);
+			if ($checkTable) {
+				return $tableName;
+			}
+			// 检查是否查询归档数据
+			$partitionDate = intval(date('ymd', strtotime('-' . 7 . ' day')));
+			if ($queryDay < $partitionDate) {
+				$isCheckOld = false;
+				if (MODULE_NAME === 'Admin' || CONTROLLER_NAME === 'Crontab') {
+					$isCheckOld = true;
 				} else {
-					if (floatval($val) > $sumInfo[$k]) {
+					$maxDate = intval(date('ymd', strtotime('-' . 45 . ' day')));
+					if ($queryDay >= $maxDate) {
+						$isCheckOld = true;
+					}
+				}
+				if ($isCheckOld) {
+					$oldTable = $this->getOldTableByDate($table_default, $query_date);
+					if (!empty($oldTable)) {
+						return $oldTable;
+					}
+				}
+			}
+			return $table_default;
+		}
+		</code></pre>
+		
+		<pre><code class="php">
+		查询归档
+		/**
+		 * @param $table_default
+		 * @param string $query_date
+		 * @return string | null
+		 */
+		public function getOldTableByDate($table_default, $query_date = '')
+		{
+			$tableName = $table_default . '_' . date('ymd', $query_timestamp);
+			$checkTable = $this->checkTableExist('old_dbName', $tableName);
+			if ($checkTable) {
+				return 'old_dbName' . '.' . $tableName;
+			}
+			return null;
+		}
+		</code></pre>
+				
+		<pre><code class="php">
+		根据开始和结束时间定位表，按开始时间-结束时间
+		/**
+		 * @param $table_default
+		 * @param string $start_date
+		 * @param string $end_date
+		 * @return array
+		 */
+		public function getPartitionTableByDateRange($table_default, $start_date, $end_date = '')
+		{
+			if (empty($start_date)) {
+				$startDay = date('ymd', strtotime('-' . 7 . ' day'));
+			} else {
+				$startTimestamp = strtotime($start_date);
+				if (empty($startTimestamp)) {
+					return array($table_default);
+				}
+				$startDay = date('ymd', $startTimestamp);
+			}
+			$startDay = intval($startDay);
+			$endDay = 0;
+			if (!empty($end_date)) {
+				$endTimestamp = strtotime($end_date);
+				if (empty($endTimestamp)) {
+					return array($table_default);
+				}
+				$endDay = date('ymd', $endTimestamp);
+			}
+			$tableList = $this->query("SELECT table_name from information_schema.tables WHERE table_schema='" . "dbName" . "' AND table_name like '{$table_default}\_______' ORDER BY table_name DESC");
+			$tableArr = array();
+			if (!empty($tableList)) {
+				foreach ($tableList as $vo) {
+					$tableDay = intval(substr($vo['table_name'], -6));
+					if ($tableDay >= $startDay) {
+						if ($endDay > 0 && $tableDay > $endDay) {
+							continue;
+						}
+						$tableArr[] = $vo['table_name'];
+					}
+				}
+			}
+			// 检查是否查询归档数据
+			$partitionDate = intval(date('ymd', strtotime('-' . 7 . ' day')));
+			if ($startDay < $partitionDate) {
+				if (MODULE_NAME === "Admin" || CONTROLLER_NAME === "Crontab") { // 后台可查询已归档数据
+					
+				} else {
+					$minDate = intval(date('ymd', strtotime('-' . 45 . ' day'))); // 会员最大可查询范围
+					if ($startDay < $minDate) {
+						$startDay = $minDate;
+					}
+				}
+				$oldTableArr = $this->getOldTableByDateRange($table_default, $startDay, $endDay);
+				if (!empty($oldTableArr)) {
+					$tableArr = array_merge($tableArr, $oldTableArr);
+				}
+			}
+			if (empty($tableArr)) {
+				$tableArr[] = $table_default;
+			}
+			return $tableArr;
+		}
+		</code></pre>
+				
+		<pre><code class="php">
+		查询归档数据
+		/**
+		 * @param $table_default
+		 * @param string $startDay
+		 * @param string $endDay
+		 * @return string | null
+		 */
+		public function getOldTableByDateRange($table_default, $startDay, $endDay)
+		{
+			$tableArr = array();
+			$tableList = $this->query("SELECT table_name FROM information_schema.tables WHERE table_schema='" . "old_dbName" . "' AND table_name like '{$table_default}\_______' ORDER BY table_name DESC");
+			if (!empty($tableList)) {
+				foreach ($tableList as $vo) {
+					$tableDay = intval(substr($vo['table_name'], -6));
+					if ($tableDay >= $startDay) {
+						if ($endDay > 0 && $tableDay > $endDay) {
+							continue;
+						}
+						$tableArr[] = "dbName" . $vo['$table_name'];
+					}
+				}
+			}
+			return $tableArr;
+		}
+		</code></pre>
+						
+		<pre><code class="php">
+		获取分表后的总行数信息
+		/**
+		 * @param $table_default
+		 * @param $countSql
+		 * @param $tableArr
+		 * @param string $countField
+		 * @return array
+		 */
+		public function getCountFromPartitionTable($table_default, $countSql, $tableArr, $countField = "counts")
+		{
+			$sumInfo = [];
+			$tableCounts = [];
+			foreach ($tableArr as $tableName) {
+				$sumDatas = $this->query(str_replace($table_default, $tableName, $countSql));
+				$sumDataInfo = $sumDatas[0];
+				$countByTable = 0;
+				if (isset($sumDataInfo[$countField])) {
+					$countByTable = intval($sumDataInfo[$countField]);
+				}
+				$tableCounts[] = ['table' => $tableName, 'count' => $countByTable];
+				foreach ($sumDataInfo as $k => $val) {
+					if (isset($sumInfo[$k])) {
+						if (strpos($k, 'distinct_') === false) {
+							$sumInfo[$k] = round($sumInfo[$k] + floatval($val), 4);
+						} else {
+							if (floatval($val) > $sumInfo[$k]) {
+								$sumInfo[$k] = floatval($val);
+							}
+						}
+					} else {
 						$sumInfo[$k] = floatval($val);
 					}
 				}
-			} else {
-				$sumInfo[$k] = floatval($val);
 			}
+			return array('count' => isset($sumInfo[$countField]) ? intval($sumInfo[$countField]) : 0, 'sumInfo' => $sumInfo, 'tableCounts' => $tableCounts);
 		}
-	}
-	return array('count' => isset($sumInfo[$countField]) ? intval($sumInfo[$countField]) : 0, 'sumInfo' => $sumInfo, 'tableCounts' => $tableCounts);
-}
-</code>
-		</pre>
+		</code></pre>
 
-		<pre>
-<code class="php">
-<h4>获取分表后的数据</h4>
-/**
- * @param $table_default
- * @param $dataSql
- * @param $pageTables
- * @param $rowStart
- * @param int $pageSize
- * @return array
- */
-public function getDataFromPartitionTable($table_default, $dataSql, $pageTables, $rowStart, $pageSize = 20)
-{
-	$rows = 0;
-	$dataList = array();
-	foreach ($pageTables as $tableInfo) {
-		if ($tableInfo['count'] > 0) {
-			$limitSize = $pageSize - count($dataList);
-			$rows += $tableInfo['count'];
-			if ($rows > $rowStart) {
-				$limitStart = $rowStart - ($rows - $tableInfo['count']);
-				$limitStart = $limitStart < 0 ? 0 : $limitStart;
-				$tempList = $this->query(str_replace($table_default, $tableInfo['table'], $dataSql) . " Limit {$limitStart}, {$limitSize}");
-				if (!empty($tempList)) {
-					$dataList = array_merge($dataList, $tempList);
-				}
-				if (count($dataList) >= $pageSize) {
-					break;
+		<pre><code class="php">
+		获取分表后的数据
+		/**
+		 * @param $table_default
+		 * @param $dataSql
+		 * @param $pageTables
+		 * @param $rowStart
+		 * @param int $pageSize
+		 * @return array
+		 */
+		public function getDataFromPartitionTable($table_default, $dataSql, $pageTables, $rowStart, $pageSize = 20)
+		{
+			$rows = 0;
+			$dataList = array();
+			foreach ($pageTables as $tableInfo) {
+				if ($tableInfo['count'] > 0) {
+					$limitSize = $pageSize - count($dataList);
+					$rows += $tableInfo['count'];
+					if ($rows > $rowStart) {
+						$limitStart = $rowStart - ($rows - $tableInfo['count']);
+						$limitStart = $limitStart < 0 ? 0 : $limitStart;
+						$tempList = $this->query(str_replace($table_default, $tableInfo['table'], $dataSql) . " Limit {$limitStart}, {$limitSize}");
+						if (!empty($tempList)) {
+							$dataList = array_merge($dataList, $tempList);
+						}
+						if (count($dataList) >= $pageSize) {
+							break;
+						}
+					}
 				}
 			}
+			return $dataList;
 		}
-	}
-	return $dataList;
-}
-</code>
-		</pre>
+		</code></pre>
 	</div>
 </body>
 </html>
