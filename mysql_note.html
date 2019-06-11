@@ -105,11 +105,20 @@ public function getPageDataByPartitionTable($countSql, $listSql, $dateField = ''
 		$tableArr = $this->getPartitionTableByDateRange($table_default, $startDate, $endDate);
 		$countInfo = $this->getCountFromPartitionTable($table_default, $countSql, $tableArr);
 		$sumInfo = $countInfo['sumInfo'];
+		//分页
 		$pageObj = new Page($countInfo['count'], $pageSize, $nowPage);
+		
 		$dataList = $this->getDataFromPartitionTable($table_default, $listSql, $countInfo['tableCounts'], $pageObj->firstRow, $pageObj->listRows);
 		return array('sumInfo' => $sumInfo, 'data' => $dataList, 'page' => $pageObj);
 	} else {
-		
+		$sumDatas = $this->query($countSql);
+		$sumInfo = $sumDatas[0];
+		$pageObj = new Page($sumInfo['counts'], $pageSize, $nowPage);
+		$dataList = array();
+		if (intval($sumInfo['counts']) > 0) {
+			$dataList = $this->query($listSql . " Limit {$pageObj->firstRow}, {$pageObj->listRows}");
+		}
+		return array('sumInfo' => $sumInfo, 'data' => $dataList, 'page' => $pageObj);
 	}
 }
 </code>
@@ -261,7 +270,7 @@ public function getPartitionTableByDateRange($table_default, $start_date, $end_d
 public function getOldTableByDateRange($table_default, $startDay, $endDay)
 {
 	$tableArr = array();
-	$tableList = $this->query("SELECT table_name FROM information_schema.tables WHERE table_schema='" . "dbName" . "' AND table_name like '{$table_default}\_______' ORDER BY table_name DESC");
+	$tableList = $this->query("SELECT table_name FROM information_schema.tables WHERE table_schema='" . "old_dbName" . "' AND table_name like '{$table_default}\_______' ORDER BY table_name DESC");
 	if (!empty($tableList)) {
 		foreach ($tableList as $vo) {
 			$tableDay = intval(substr($vo['table_name'], -6));
@@ -274,6 +283,84 @@ public function getOldTableByDateRange($table_default, $startDay, $endDay)
 		}
 	}
 	return $tableArr;
+}
+</code>
+		</pre>
+						
+		<pre>
+<code class="php">
+<h4>获取分表后的总行数信息</h4>
+/**
+ * @param $table_default
+ * @param $countSql
+ * @param $tableArr
+ * @param string $countField
+ * @return array
+ */
+public function getCountFromPartitionTable($table_default, $countSql, $tableArr, $countField = "counts")
+{
+	$sumInfo = [];
+	$tableCounts = [];
+	foreach ($tableArr as $tableName) {
+		$sumDatas = $this->query(str_replace($table_default, $tableName, $countSql));
+		$sumDataInfo = $sumDatas[0];
+		$countByTable = 0;
+		if (isset($sumDataInfo[$countField])) {
+			$countByTable = intval($sumDataInfo[$countField]);
+		}
+		$tableCounts[] = ['table' => $tableName, 'count' => $countByTable];
+		foreach ($sumDataInfo as $k => $val) {
+			if (isset($sumInfo[$k])) {
+				if (strpos($k, 'distinct_') === false) {
+					$sumInfo[$k] = round($sumInfo[$k] + floatval($val), 4);
+				} else {
+					if (floatval($val) > $sumInfo[$k]) {
+						$sumInfo[$k] = floatval($val);
+					}
+				}
+			} else {
+				$sumInfo[$k] = floatval($val);
+			}
+		}
+	}
+	return array('count' => isset($sumInfo[$countField]) ? intval($sumInfo[$countField]) : 0, 'sumInfo' => $sumInfo, 'tableCounts' => $tableCounts);
+}
+</code>
+		</pre>
+
+		<pre>
+<code class="php">
+<h4>获取分表后的数据</h4>
+/**
+ * @param $table_default
+ * @param $dataSql
+ * @param $pageTables
+ * @param $rowStart
+ * @param int $pageSize
+ * @return array
+ */
+public function getDataFromPartitionTable($table_default, $dataSql, $pageTables, $rowStart, $pageSize = 20)
+{
+	$rows = 0;
+	$dataList = array();
+	foreach ($pageTables as $tableInfo) {
+		if ($tableInfo['count'] > 0) {
+			$limitSize = $pageSize - count($dataList);
+			$rows += $tableInfo['count'];
+			if ($rows > $rowStart) {
+				$limitStart = $rowStart - ($rows - $tableInfo['count']);
+				$limitStart = $limitStart < 0 ? 0 : $limitStart;
+				$tempList = $this->query(str_replace($table_default, $tableInfo['table'], $dataSql) . " Limit {$limitStart}, {$limitSize}");
+				if (!empty($tempList)) {
+					$dataList = array_merge($dataList, $tempList);
+				}
+				if (count($dataList) >= $pageSize) {
+					break;
+				}
+			}
+		}
+	}
+	return $dataList;
 }
 </code>
 		</pre>
