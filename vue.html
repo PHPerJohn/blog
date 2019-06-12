@@ -56,7 +56,7 @@
 			</div>
 			<div>
 				<span>年龄：</span>
-				<input type="text" placeholder="0" v-model="newStudent.age">
+				<input type="number" placeholder="0" v-model="newStudent.age">
 			</div>
 			<div>
 				<span>电话：</span>
@@ -91,9 +91,9 @@
 		el:"#app",
 		data:{
 			people: [
-				{name:"梁可乐", sex:"男", age:22, phone:"12345698772"},
-				{name:"梁萝卜", sex:"女", age:18, phone:"12345698778"},
-				{name:"梁绵筐", sex:"男", age:20, phone:"12345698770"}
+				{name:"0号", sex:"男", age:22, phone:"12345678901"},
+				{name:"Kuuga", sex:"男", age:25, phone:"12345678902"},
+				{name:"Rose", sex:"女", age:20, phone:"12345678900"}
 			],
 			newStudent:{name:'', sex:'男', age:0, phone:''}
 		},
@@ -112,7 +112,7 @@
 					return;
 				}
 				this.people.unshift(this.newStudent)
-				this.newStudent = {name:'', sex:'男', age:0, phone:''}
+				// this.newStudent = {name:'', sex:'男', age:0, phone:''}
 			},
 			deleteStudent(index) {
 				console.log(index)
@@ -126,9 +126,9 @@
 			el:"#app",
 			data:{
 				people: [
-					{name:"梁可乐", sex:"男", age:22, phone:"12345678972"},
-					{name:"梁萝卜", sex:"女", age:18, phone:"12345678978"},
-					{name:"梁绵筐", sex:"男", age:20, phone:"12345678970"}
+					{name:"0号", sex:"男", age:22, phone:"12345678901"},
+					{name:"Kuuga", sex:"男", age:25, phone:"12345678902"},
+					{name:"Rose", sex:"女", age:20, phone:"12345678900"}
 				],
 				newStudent:{name:'', sex:'男', age:0, phone:''}
 			},
@@ -163,7 +163,7 @@
 						return;
 					}
 					this.people.unshift(this.newStudent)
-					this.newStudent = {name:'', sex:'男', age:0, phone:''}
+					// this.newStudent = {name:'', sex:'男', age:0, phone:''}
 				},
 				deleteStudent(index) {
 					console.log(index)

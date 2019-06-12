@@ -1,5 +1,5 @@
 body, h1, h2, h3, h4, h5, h6, hr, p, blockquote, dl, dt, dd, ul, ol, li, pre, form, fieldset, legend, button, input, textarea, th, td { margin:0; padding:0; } 
-body, button, input, select, textarea { font:12px/1.5tahoma, arial, \5b8b\4f53; } 
+body, button, input, select, textarea { font:14px/1.5 "Helvetica Neue",Helvetica,Arial,"Microsoft Yahei","Hiragino Sans GB","Heiti SC","WenQuanYi Micro Hei",sans-serif; } 
 h1, h2, h3, h4, h5, h6{ font-size:100%; } 
 address, cite, dfn, em, var { font-style:normal; } 
 code, kbd, pre, samp { font-family:couriernew, courier, monospace; } 
@@ -17,15 +17,15 @@ table { border-collapse:collapse; border-spacing:0; }
 .go-navbar{
 	position: relative;
 	width:100%;
-	height:35px;
+	height: 40px;
 	background-color:#333;
 }
 .go-navbar .go-r span, .go-navbar .go-l span{
 	position: absolute;
-	height:35px;
+	height:40px;
 	padding:0 10px;
 	color:#eee;
-	line-height: 35px;
+	line-height: 40px;
 }
 .go-navbar .go-l span{
 	left:5px;
@@ -59,17 +59,17 @@ table { border-collapse:collapse; border-spacing:0; }
 	right:0px;
 }
 .go-navbar .go-r:hover span{
-	background-color:#4477aa;
+	background-color:#00a1d6;
 }
 /*操作按钮-弹出列表*/
 .go-navbar .go-r .go-nav-alert{
 	z-index:3;
 	position: absolute;
 	right:0;
-	top:35px;
+	top:40px;
 	min-width: 130px;
 	padding:10px;
-	background-color:#ddd;
+	background-color: #fefefe;
 	display:none;
 	box-shadow: -1px 1px 5px #666;
 }
@@ -81,30 +81,32 @@ table { border-collapse:collapse; border-spacing:0; }
 	color:#333;
 }
 .go-navbar .go-nav-alert li:hover{
-	background-color:#4477aa;
-	color:#eee;
+	background-color:#00a1d6;
+	color:#fefefe;
 }
 /*左边菜单*/
 .go-menu{
 	position:absolute;
-	top:35px;
+	top:40px;
 	bottom:0px;
-	width:140px;
-	background-color:#bbb;
+	width:160px;
+	background-color: #fefefe;
 	transition:width .3s;
 }
 .go-menu ul{
 	position:absolute;
 	top:10px;
-	width:140px;
+	width:157px;
 }
 .go-menu ul li{
 	padding:8px 8px 8px 15px;
+	color: #333;
 }
 .go-menu ul li:hover{
-	color:#eee;
-	background-color:#4477aa;
+	background-color:#00a1d6;
+	color:#fefefe;
 }
+
 /*菜单隐藏按钮*/
 .go-menu .go-zfx{
 	position:absolute;
