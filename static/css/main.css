@@ -18,7 +18,7 @@ table { border-collapse:collapse; border-spacing:0; }
 	position: relative;
 	width:100%;
 	height: 40px;
-	background-color:#333;
+	background-color:#5599cc;
 }
 .go-navbar .go-r span, .go-navbar .go-l span{
 	position: absolute;
@@ -59,7 +59,7 @@ table { border-collapse:collapse; border-spacing:0; }
 	right:0px;
 }
 .go-navbar .go-r:hover span{
-	background-color:#00a1d6;
+	background-color:#00b5e5;
 }
 /*操作按钮-弹出列表*/
 .go-navbar .go-r .go-nav-alert{
@@ -81,7 +81,7 @@ table { border-collapse:collapse; border-spacing:0; }
 	color:#333;
 }
 .go-navbar .go-nav-alert li:hover{
-	background-color:#00a1d6;
+	background-color:#00b5e5;
 	color:#fefefe;
 }
 /*左边菜单*/
@@ -103,7 +103,7 @@ table { border-collapse:collapse; border-spacing:0; }
 	color: #333;
 }
 .go-menu ul li:hover{
-	background-color:#00a1d6;
+	background-color:#00b5e5;
 	color:#fefefe;
 }
 
@@ -114,7 +114,7 @@ table { border-collapse:collapse; border-spacing:0; }
 	bottom:0px;
 	width:3px;
 	height:100%;
-	background-color:#333;
+	background-color:#5599cc;
 }
 .go-menu .go-but{
 	position:absolute;
@@ -135,6 +135,7 @@ body>.active{
 }
 body>.active>.go-zfx{
 	width:10px;
+	background-color:#333;
 }
 body>.active>.go-zfx>.go-but{
 	border-radius:50% 0 0 50%;
