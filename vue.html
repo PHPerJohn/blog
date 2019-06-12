@@ -7,7 +7,9 @@
 	<script type="text/javascript" src="./static/highlight/highlight.pack.js"></script>
 	<script>hljs.initHighlightingOnLoad();</script>
 	<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 	<style>
+	*{margin: 0; padding: 0}
 	#app{
 		margin: 50px auto;
 		width: 600px;
@@ -15,14 +17,15 @@
 	fieldset{
 		border: 2px solid #336699;
 		margin-bottom: 20px;
+		padding: 10px;
 	}
-	fieldset input{
-		width: 200px;
-		height: 30px;
+	fieldset input, select{
+		width: auto;
 		margin: 10px 0;
+		padding: 5px;
 	}
 	table{
-		width: 600px;
+		width: 100%;
 		border: 2px solid #336699;
 		text-align: center;
 	}
@@ -131,6 +134,22 @@
 			},
 			methods:{
 				createNewStudent(){
+					/*
+					axios.defaults.headers.common['authorization'] = 'Bearer ' + window.localStorage.token;
+					axios({
+						method: 'post',
+						url: 'http://two.com/webapp/user/updtoken',
+						data: {
+							'userName': 'admin',
+							'password': '123456'
+						}
+					}).then(function (response) {
+					console.log(response);
+						window.localStorage.removeItem('token');
+						window.localStorage.token = response.data.token;
+					});
+					*/
+					
 					if(this.newStudent.name === ''){
 						alert('姓名不能空');
 						return;
