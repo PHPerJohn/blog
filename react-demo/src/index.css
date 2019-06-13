@@ -1,0 +1,28 @@
+*{margin: 0; padding: 0}
+#root{
+	margin: 50px auto;
+	width: 600px;
+}
+fieldset{
+	border: 2px solid #336699;
+	margin-bottom: 20px;
+	padding: 10px;
+}
+fieldset input, select{
+	width: auto;
+	margin: 10px 0;
+	padding: 5px;
+}
+table{
+	width: 100%;
+	border: 2px solid #336699;
+	text-align: center;
+}
+thead{
+	background-color: #336699;
+	color: #ffffff;
+}
+pre code{
+	margin: 0 auto;
+	width: 1000px;
+}
