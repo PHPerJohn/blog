@@ -1,2 +1,2 @@
 # blog
-<https://phperjohn.github.io/blog/main.html />
+<https://phperjohn.github.io/blog/main.html>
