@@ -1,0 +1,89 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<link rel="stylesheet" type="text/css" href="./static/css/main.css">
+	<link rel="stylesheet" type="text/css" href="./static/css/content.css">
+	<script type="text/javascript" src="./static/js/main.js"></script>
+	<link rel="stylesheet" type="text/css" href="./static/highlight/styles/monokai-sublime.css">
+	<script type="text/javascript" src="./static/highlight/highlight.pack.js"></script>
+	<script>hljs.initHighlightingOnLoad();</script>
+	<title>Docker安装</title>
+	<style>
+		pre code{
+			margin: 20px auto;
+			width: 1200px;
+		}
+	</style>
+</head>
+<body>
+<pre><code>
+清华镜像
+https://mirrors.tuna/tsinghua.edu.cn
+
+添加源
+cd /etc/yum.repos.d/
+
+查看(开启的)资源库 有没有Docker CE Stable - x86_64
+yum repolist
+
+/etc/yum.repos.d/目录下下载 Docker CE源
+wget https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/centos/docker-ce.repo
+
+vim 进入 把国外源地址 全部替换位 清华源地址
+:%s@https://download.docker.com/linux/@https://mirrors.tuna.tsinghua.edu.cn/docker-ce/linux/@
+
+再次查看(开启的)资源库 有没有Docker CE Stable - x86_64
+yum repolist
+
+安装docker
+yum install docker-ce
+
+由于docker默认从国外下载镜像，更改国内镜像
+mkdir /etc/docker
+vi /etc/docker/daemon.json
+写入以下内容 修改docker的守护进程
+{
+  "registry-mirrors": ["https://registry.docker-cn.com"]
+}
+
+
+启动Docker
+systemctl start docker.service
+
+查看版本
+docker version
+
+查看信息
+docker info
+
+常用几个命令
+docker search: Seach the Docker Hub for images
+docker pull: Pull an images or a repository from a registry
+docker images: List images
+docker create: Create a new container
+docker start: Start one or more stopped containers
+docker run: Run a command in a new container
+docker attach: Attach to a running container
+dockar ps: List containers
+docker logs: Fetch the logs of a container
+docker restart: Restart a container
+docker stop: Stop one or more running containers
+docker kill: Kill one or more running containers
+dockar rm: Remove one or more containers
+
+好用的busybox工具
+docker run --name b1 -it busybox
+docker inspect b1
+进入buxybox
+docker exec -it b1 /bin/sh
+
+Nginx服务 Nginx里面自带有busybox
+docker run --name web1 -d nginx:alpine
+docker inspect web1
+docker exec -it web1 /bin/sh
+Nginx日志
+docker logs web1
+</code></pre>
+<body>
+</html>

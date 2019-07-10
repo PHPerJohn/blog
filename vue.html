@@ -111,11 +111,10 @@
 					alert('电话号码不能空');
 					return;
 				}
-				this.people.unshift(this.newStudent)
-				// this.newStudent = {name:'', sex:'男', age:0, phone:''}
+				this.people.unshift(this.newStudent);
+				this.newStudent = { name:'a', sex:'男', age:0, phone:''};
 			},
 			deleteStudent(index) {
-				console.log(index)
 				this.people.splice(index, 1);
 			}
 		}
@@ -134,7 +133,41 @@
 			},
 			methods:{
 				createNewStudent(){
-					/*
+					if(this.newStudent.name === ''){
+						alert('姓名不能空');
+						return;
+					}
+					if(this.newStudent.age <= 0){
+						alert('年龄不能0');
+						return;
+					}
+					if(this.newStudent.phone === ''){
+						alert('电话号码不能空');
+						return;
+					}
+					this.people.unshift(this.newStudent)
+					this.newStudent = {name:'', sex:'男', age:0, phone:''}
+				},
+				deleteStudent(index) {
+					this.people.splice(index, 1);
+				}
+			}
+		})					
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		/*
 					axios.defaults.headers.common['authorization'] = 'Bearer ' + window.localStorage.token;
 					axios({
 						method: 'post',
@@ -149,28 +182,6 @@
 						window.localStorage.token = response.data.token;
 					});
 					*/
-					
-					if(this.newStudent.name === ''){
-						alert('姓名不能空');
-						return;
-					}
-					if(this.newStudent.age <= 0){
-						alert('年龄不能0');
-						return;
-					}
-					if(this.newStudent.phone === ''){
-						alert('电话号码不能空');
-						return;
-					}
-					this.people.unshift(this.newStudent)
-					// this.newStudent = {name:'', sex:'男', age:0, phone:''}
-				},
-				deleteStudent(index) {
-					console.log(index)
-					this.people.splice(index, 1);
-				}
-			}
-		})
 	</script>
 </body>
 </html>
