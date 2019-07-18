@@ -22,7 +22,7 @@
 	docker pull mysql
 	
 	Master(主)
-		docker run -p 33061:3306 --name master -e MYSQL_ROOT_PASSWORD=123456 -d mysql:latest
+		docker run -p 33060:3306 --name master -e MYSQL_ROOT_PASSWORD=123456 -d mysql:latest
 		docker exec -it master /bin/bash
 		apt-get update
 		apt-get install vim
@@ -72,6 +72,28 @@
 	-- stop slave
 	
 	完成！
+	
+	-- show master status;
+	-- show grants for 'copy'@'%';
+	-- create user 'backup'@'%' identified by '123456'
+	-- grant REPLICATION SLAVE on *.* to 'copy'@'%'
+	-- reset master
+	-- create user 'copy'@'%' identified with 'mysql_native_password' by '123456'
+	-- show grants for 'backup'@'%';
+	-- alter user 'backup'@'%' IDENTIFIED WITH 'mysql_native_password' by '123456'
+	-- GRANT ALL PRIVILEGES ON *.* TO 'backup'@'%'; 
+		
+	-- stop slave; 
+	-- change master to master_host="172.17.0.2", master_port=3306, master_user="copy", master_password='123456', master_log_file="mysql-bin.000001", master_log_pos=155, master_connect_retry=3;
+	-- start slave;
+	-- show slave status;
+	-- show master status;
+	-- show databases;
+	-- reset slave
+	-- flash privileges
+	-- create user 'backup'@'%' identified with 'mysql_native_password' by '123456'
+	-- grant REPLICATION SLAVE on *.* to 'copy'@'%'
+	-- GRANT ALL PRIVILEGES ON *.* TO 'backup'@'%'; 
 </code></pre>
 <body>
 </html>
