@@ -84,6 +84,31 @@ docker inspect web1
 docker exec -it web1 /bin/sh
 Nginx日志
 docker logs web1
+
+
+
+# MyWorkerman Dockerfile
+# workerman need pcntl,sockets,event
+
+FROM php:7.3-fpm
+LABEL maintainer="Draula" version="v0.1-2"
+RUN apt-get update \
+	&& apt-get install -y openssl libssl-dev \
+	&& docker-php-ext-install pcntl sockets mysqli opcache \
+	&& docker-php-ext-enable opcache \
+	&& apt-get install libevent-dev -y \
+	&& pecl install event \
+	&& echo "extension=event.so" > /usr/local/etc/php/conf.d/event.ini \
+	&& curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin --filename=composer \
+	&& composer --ansi --version --no-interaction
+EXPOSE 9000 80 443 9501 9527
+CMD /usr/local/sbin/php-fpm
+
+docker build -t myworkerman:v0.1 .
+docker run --name myworkerman -d -P 8888:80 -v \home\www:var\www\html myworkerman:v0.1
+
+
+
 </code></pre>
 <body>
 </html>
